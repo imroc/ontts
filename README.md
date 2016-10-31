@@ -73,7 +73,6 @@ redis-cli>publish tts "{\"id\":\"245671051\",\"txt\":\"这是一段测试语音\
        ├── doc (讯飞语音linux SDK相关参考)
        ├── include (cgo需要用到的头文件)
        ├── lib (动态链接库 SDK)
-       │   └── libmsc.so
        ├── README.md
        └── xf.go
 </pre>
