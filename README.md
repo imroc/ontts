@@ -11,7 +11,7 @@ go get github.com/imroc/ontts
 ## 运行
 需要将libmsc.so加入环境变量
 ``` sh
-cp xf/lib/libmsc.so /usr/local/lib/
+cp xf/lib/x64/libmsc.so /usr/local/lib/
 vi ~/.bashrc
 ```
 export LD_LIBRARY_PATH = /usr/local/lib
