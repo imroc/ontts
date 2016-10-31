@@ -16,7 +16,7 @@ Usage: ontts [options]
 
 讯飞语音参数选项:
     -tp <param>                 TTS合成参数[有默认值]
-    -lp <param>                 登录参数[有默认值]
+    -lp <param>                 登录参数
 
 单次合成模式选项:
     -t <text>                	待合成的文本
@@ -52,7 +52,7 @@ func main() {
 	flag.BoolVar(&help, "h", false, "Help")
 
 	flag.StringVar(&opts.TTSParams, "tp", "voice_name = xiaoqi, text_encoding = UTF8, sample_rate = 8000, speed = 50, volume = 50, pitch = 50, rdn = 2", "TTS合成参数")
-	flag.StringVar(&opts.LoginParams, "lp", "", "登录参数")
+	flag.StringVar(&opts.LoginParams, "lp", "appid = 5808ae7e, work_dir = .", "登录参数")
 	flag.StringVar(&opts.RedisAddr, "r", ":6379", "redis连接地址")
 	flag.StringVar(&opts.RedisPass, "rp", "", "redis连接密码")
 	flag.StringVar(&opts.OutDir, "d", "", "音频输出目录")

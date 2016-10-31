@@ -39,7 +39,7 @@ redis-cli>publish tts "{\"id\":\"245671051\",\"txt\":\"这是一段测试语音\
 <pre>
 讯飞语音参数选项:
     -tp <param>                 TTS合成参数[有默认值]
-    -lp <param>                 登录参数[有默认值]
+    -lp <param>                 登录参数
 
 单次合成模式选项:
     -t <text>                	待合成的文本
