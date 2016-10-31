@@ -1,0 +1,11 @@
+hash: d98040927f84a825e931f22625c59c43237cf893c9efebb7db41f19ba629c6d9
+updated: 2016-10-25T19:52:44.942310245+08:00
+imports:
+- name: github.com/garyburd/redigo
+  version: 80f7de34463b0ed3d7c61303e5619efe1b227f92
+  subpackages:
+  - internal
+  - redis
+- name: github.com/imroc/log
+  version: c6167dd819ca6d57c694583aeb6bc534e5fb5b1d
+testImports: []
