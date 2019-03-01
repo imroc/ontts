@@ -9,7 +9,10 @@ package xf
 
 */
 import "C"
-import "fmt"
+import (
+	"fmt"
+	"unsafe"
+)
 
 /*
 * rdn:           合成音频数字发音方式
@@ -34,6 +37,9 @@ func SetSleep(t int) {
 }
 
 func Login(loginParams string) error {
+	l := C.CString(loginParams)
+	defer C.free(unsafe.Pointer(l))
+
 	ret := C.MSPLogin(nil, nil, C.CString(loginParams))
 	if ret != C.MSP_SUCCESS {
 		return fmt.Errorf("登录失败，错误码：%d", int(ret))
@@ -50,7 +56,11 @@ func Logout() error {
 }
 
 func TextToSpeech(text, outPath string) error {
-	ret := C.text_to_speech(C.CString(text), C.CString(outPath), ttsParams, sleep)
+	t := C.CString(text)
+	o := C.CString(outPath)
+	defer C.free(unsafe.Pointer(t))
+	defer C.free(unsafe.Pointer(o))
+	ret := C.text_to_speech(t, o, ttsParams, sleep)
 	if ret != C.MSP_SUCCESS {
 		return fmt.Errorf("音频生成失败，错误码：%d", int(ret))
 	}

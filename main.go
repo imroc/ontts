@@ -3,10 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"ontts/server"
 	"os"
 	"strings"
-
-	"github.com/imroc/ontts/server"
 
 	"github.com/imroc/log"
 )
@@ -16,7 +15,7 @@ Usage: ontts [options]
 
 讯飞语音参数选项:
     -tp <param>                 TTS合成参数[有默认值]
-    -lp <param>                 登录参数
+    -lp <param>                 登录参数[有默认值]
 
 单次合成模式选项:
     -t <text>                	待合成的文本
@@ -24,6 +23,7 @@ Usage: ontts [options]
 
 合成服务模式选项:
     -d <dir>                    音频保存的目录 
+    -b <dir>                    音频备份的目录 
     -s <digit>                  合成速度级别(1-10),数值越小速度越快，越耗CPU[默认为1]
     -r <addr>                   redis连接地址
     -rp <pass>                  redis密码
@@ -52,10 +52,11 @@ func main() {
 	flag.BoolVar(&help, "h", false, "Help")
 
 	flag.StringVar(&opts.TTSParams, "tp", "voice_name = xiaoqi, text_encoding = UTF8, sample_rate = 8000, speed = 50, volume = 50, pitch = 50, rdn = 2", "TTS合成参数")
-	flag.StringVar(&opts.LoginParams, "lp", "appid = 5808ae7e, work_dir = .", "登录参数")
+	flag.StringVar(&opts.LoginParams, "lp", "appid = 5718a335, work_dir = .", "登录参数")
 	flag.StringVar(&opts.RedisAddr, "r", ":6379", "redis连接地址")
 	flag.StringVar(&opts.RedisPass, "rp", "", "redis连接密码")
 	flag.StringVar(&opts.OutDir, "d", "", "音频输出目录")
+	flag.StringVar(&opts.BackupDir, "b", "", "音频保存目录")
 	flag.IntVar(&opts.Speed, "s", 1, "合成速度")
 
 	flag.Parse()

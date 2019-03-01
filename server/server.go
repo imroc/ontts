@@ -3,10 +3,11 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"ontts/xf"
 	"os"
+	"strings"
 	"time"
-
-	"github.com/imroc/ontts/xf"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/imroc/log"
@@ -18,6 +19,7 @@ type Server struct {
 
 type Options struct {
 	OutDir      string //音频输出目录
+	BackupDir   string // 备份目录，文件输出成功之后，再将文件复制到备份目录
 	Level       int    //音频生成速度级别，越快越耗CPU，级别1~10,数字越小速度越快
 	TTSParams   string
 	LoginParams string
@@ -38,17 +40,12 @@ func New(opts *Options) *Server {
 }
 
 func (s *Server) Start() {
-	if s.opts.LoginParams == "" {
-		log.Error("no login params")
-		return
-	}
 	var c redis.Conn
 	var err error
 	if s.opts.RedisPass == "" {
 		c, err = redis.Dial("tcp", s.opts.RedisAddr)
 	} else {
 		c, err = redis.Dial("tcp", s.opts.RedisAddr, redis.DialPassword(s.opts.RedisPass))
-
 	}
 	if err != nil {
 		log.Error("failed to connect redis:%v")
@@ -83,6 +80,9 @@ func (s *Server) Start() {
 	if s.opts.OutDir != "" && s.opts.OutDir[len(s.opts.OutDir)-1] != os.PathSeparator {
 		s.opts.OutDir += string(os.PathSeparator)
 	}
+	if s.opts.BackupDir != "" && s.opts.BackupDir[len(s.opts.BackupDir)-1] != os.PathSeparator {
+		s.opts.BackupDir += string(os.PathSeparator)
+	}
 
 	var speech Speech
 	for {
@@ -93,14 +93,39 @@ func (s *Server) Start() {
 				log.Error("error unmarshal:%v", err)
 				continue
 			}
+			if len(strings.Fields(speech.Txt)) == 0 { // 忽略空白字符串，会导致语音合成参数错误
+				continue
+			}
+			tryN := 0
+			ttsFilename := s.opts.OutDir + speech.Id + ".wav"
 		TTS:
-			err = xf.TextToSpeech(speech.Txt, s.opts.OutDir+speech.Id+".wav")
+			err = xf.TextToSpeech(speech.Txt, ttsFilename)
 			if err != nil {
+				tryN++
 				log.Error("error convert:%v,tts ID:%s,TXT:%s", err, speech.Id, speech.Txt)
+				if tryN > 5 { // 多次重试失败，忽略此条语音的合成
+					continue
+				}
 				time.Sleep(5 * time.Second)
 				goto TTS
 			}
 			log.Debug("合成ID:%s,TXT:%s", speech.Id, speech.Txt)
+			if s.opts.BackupDir != "" {
+				src, _err := os.Open(ttsFilename)
+				if _err != nil {
+					log.Error("failed to open file %s:%v", ttsFilename, _err)
+				}
+				filename := s.opts.BackupDir + speech.Id + ".wav"
+				dst, _err := os.Create(filename)
+				if _err != nil {
+					log.Error("failed to create file %s:%v", filename, _err)
+				} else {
+					_, _err = io.Copy(dst, src)
+					if _err != nil {
+						log.Error("failed to copy file %s->%s:%v", ttsFilename, filename, _err)
+					}
+				}
+			}
 		case error:
 			log.Error("error redis message:%v", n)
 			time.Sleep(10 * time.Second)
@@ -119,7 +144,7 @@ func (s *Server) Once(txt string, desPath string) error {
 		return err
 	}
 	//不SetSleep,默认为0,单次合成以高性能模式
-	log.Debug("txt:%s,output path:%s", txt, desPath)
+	log.Debug("txt:%s,des_path:%s", txt, desPath)
 	err = xf.TextToSpeech(txt, desPath)
 	if err != nil {
 		return err
